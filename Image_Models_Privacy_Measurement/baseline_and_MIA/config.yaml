@@ -1,0 +1,64 @@
+# YAML configuration for training and evaluation script
+experiment:
+  seed: 42  # Random seed for reproducibility
+  n_epochs: 40  # Number of training epochs
+  batch_size: 32  # Batch size for training
+  learning_rate: 0.0001  # Learning rate for optimizer
+  n_cpu: 8  # Number of CPU threads for data loading
+  result_dir: 'panoramia_results/'  # Directory to save result CSV files
+
+paths:
+  data_path: '/path/to/cifar10_real_dataset'  # Path to CIFAR-10 real dataset
+  synthetic_train_folder: '/path/to/synthetic_dataset_folder'  # Path to train synthetic dataset folder
+  synthetic_test_folder: '/path/to/synthetic_dataset_folder'  # Path to test synthetic dataset folder
+  label_train_file: '/path/to/train_label_file'  # Path to train label file for synthetic data
+  label_test_file: '/path/to/test_label_file'  # Path to test label file for synthetic data
+  model_g_path: '/path/to/model_g_checkpoint'  # Path to Helper Model checkpoint
+  model_f_path: '/path/to/model_f_checkpoint'  # Path to Model F checkpoint
+
+sampling:
+  train_data_probability: 0.5  # Probability for selecting train data in Bernoulli sampling
+  test_data_probability: 0.5  # Probability for selecting test data in Bernoulli sampling
+
+# Model configurations
+models:
+  resnet:
+    pretrained: false
+    num_classes: 2
+    optimizer:
+      type: SGD
+      learning_rate: 0.01
+      momentum: 0.9
+
+classifiers:
+  baseline_logit_classifier:
+    hidden_layer_sizes: [64, 32]
+    activation: 'relu'
+    solver: 'adam'
+    alpha: 0.0001  
+    random_state: 42
+  mia_logit_classifier:
+    hidden_layer_sizes: [64, 32]
+    activation: 'relu'
+    solver: 'adam'
+    alpha: 0.0001  
+    random_state: 42
+
+# Dataset configurations
+dataset:
+  cifar10_transform:
+    resize: 32
+    normalize:
+      mean: [0.5, 0.5, 0.5]
+      std: [0.5, 0.5, 0.5]
+
+# Training process settings
+training:
+  criterion: CrossEntropyLoss
+  use_cuda: true  # Automatically check if CUDA is available
+  data_prior: [100, 500, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000, 10000]
+
+
+evaluation:
+  roc_curve: true  # Whether to evaluate the ROC curve
+  precision_recall_curve: true  # Whether to evaluate the precision-recall curve
