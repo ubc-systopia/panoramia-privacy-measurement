@@ -7,7 +7,7 @@
 [![Documentation](https://img.shields.io/badge/NeurIPS-2024-brightgreen.svg)](https://neurips.cc/virtual/2024/poster/96581)
 
 <p align="center">
-<img src="https://github.com/Mishaa1/priv-audit/blob/neurips_code/images_models_priv_audit/system_design.png" alt="PANORAMIA System Design" width="600" height="300">
+<img src="https://github.com/ubc-systopia/panoramia-privacy-measurement/blob/main/Image_Models_Privacy_Measurement/system_design.png" alt="PANORAMIA System Design" width="600" height="300">
  
  *PANORAMIA’s two-phase privacy audit. Phase 1: training of generative model G using member data. Phase 2: training a MIA
 on a subset of member data and generated non-member data, along with the loss values of target model f on these data points. Then, the comparison of
