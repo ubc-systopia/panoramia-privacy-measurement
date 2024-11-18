@@ -7,7 +7,7 @@
 [![Documentation](https://img.shields.io/badge/NeurIPS-2024-brightgreen.svg)](https://neurips.cc/virtual/2024/poster/96581)
 
 <p align="center">
-<img src="https://github.com/ubc-systopia/panoramia-privacy-measurement/blob/main/Image_Models_Privacy_Measurement/system_design.png" alt="PANORAMIA System Design" width="600" height="300">
+<img src="https://github.com/Mishaa1/priv-audit/blob/neurips_code/images_models_priv_audit/system_design.png" alt="PANORAMIA System Design" width="600" height="300">
  
  *PANORAMIA’s two-phase privacy audit. Phase 1: training of generative model G using member data. Phase 2: training a MIA
 on a subset of member data and generated non-member data, along with the loss values of target model f on these data points. Then, the comparison of
@@ -63,14 +63,30 @@ A brief overview of the structure of the repository:
 │       └── Readme.md      # Readme file with the relevant run instructions 
 │
 |
-├── LLM_NLP_Privacy_Measurement/ (WIP)  # PANORAMIA for privacy measurement of  NLP modaility modals
-|    └── DP_models/
-│       
-|    └──generative_model/               # General utility functions
-│      
+├── LLM_NLP_Privacy_Measurement/   # PANORAMIA for privacy measurement of  text data modality
+│   ├── src                                 # Contains the core code for the project
+│   │   ├── datasets                        # Data handling and preparation for all stages of PANORAMIA privacy auditing pipeline
+│   │   │   └── datamodule.py               # Initializes datasets and dataloaders, ensures data consistency across all experiments in PANORAMIA pipeline
+│   │   ├── generator                       # Synthetic Text Data generation for PANORAMIA                      
+│   │   │   ├── generate.py                 # Generates synthetic data samples
+│   │   │   ├── train.py                    # Fine-tunes a text generator model (Language Model) on real data, supports differentially private training
+│   │   │   └── utils.py                    # Utility functions for model training, length-checking of synthetic samples, and privacy configurations
+│   │   ├── audit_model                     # Contains modules for preparing PANORAMIA audit models, including model wrappers, training scripts, and utilities supporting differentially private (DP) training
+│   │   │   ├── audit.py                    # Defines core audit model classes for privacy auditing, with embedding extraction and model-freezing functions
+│   │   │   ├── dp_trainer.py               # Implements differentially private (DP) training routines and privacy configurations for audit models
+│   │   │   ├── train.py                    # Trains audit models (either target or helper) with support for differentially private (DP) and regular training modes
+│   │   │   └── utils.py                    # Utility functions for model setup, initialization, and reproducibility in audit model training
+│   │   ├── attacks                         # Contains modules for executing privacy attacks, including model definitions, custom training routines, and utilities for deterministic setup and configuration management for membership inference and baseline attacks
+│   │   │   ├── custom_trainer.py           # Defines a two-phase trainer class to manage model training and evaluation, supporting metrics logging, deterministic training, and adaptable configurations for privacy attacks
+│   │   │   ├── model.py                    # Implements a GPT-2 based distinguisher network for privacy vulnerability detection (or real-fake detection in case of our baseline), combining text embeddings with featurized logits (either from the target model or the helper model). It includes configurable layers for embedding transformations and supports two-phase optimization to enhance classification effectiveness in privacy attacks.
+│   │   │   ├── train.py                    # Manages the training process for privacy attack models, setting up configurations, data modules, and logging. Supports model training for both baseline and membership inference attacks.
+│   │   │   └── utils.py                    # Provides utility functions for setting random seeds, ensuring deterministic training, managing logging groups for baseline and membership inference attacks in wandb, and computing the privacy measurement on the validation set
+│   │   ├── main.py                         # Orchestrates the PANORAMIA pipeline, managing data preparation, generative model training, synthetic sample generation, audit model training, and privacy attack execution
+│   │   ├── arguments.py                    # Defines command-line arguments for PANORAMIA pipeline configuration
+│   │   └── utils.py                        # Contains utility functions for managing output directories and configuring paths based on experiment parameters for reproducibility and organized output storage
+│   ├── requirements.txt
+│   └── README.md
 │
-|
-|
 ├── Tabular_Models_Privacy_Measurement/   # PANORAMIA for privacy measurement of tabular data models
 │   └── data/results/
 |          ├── mia_baseline_default_0.csv
@@ -82,44 +98,40 @@ A brief overview of the structure of the repository:
 │      └── train_target_tab.py
 |      └── Readme.md      # Readme file with the relevant run instructions 
 │
-├── Plotting_Scipts/
-│   ├── create_epsilon_lb_recall_plot.py   # run the plotting code to generate plots
+├── Plotting/
+│   ├── compute_plot_audit_values.py   # run the plotting code to generate plots
 │   └── Readme.md      # Readme file with the relevant run instructions
 └── README.md
 ```
 ## ◆ Usage:
-This auditing framework works in two parts: i) The Data Generation Phase ii) The Audit Evaluation Phase
+This auditing framework works in two parts: i) The Data Generation Phase ii) The Audit Evaluation Phase. Below, we provide a semantic overview of how to run the framework using the image data modality as an example. For detailed instructions/commands specific to each data modality, please refer to the respective directory.
 
 ### ◇ Data Generation Phase:
 
-### ◇ Generative Model for Non-Member Data
-Step 1: Train a generative model on a subset of data used to train your target ML model. This generative model will then generate samples for the non-member dataset. This repository provides a generative model for CIFAR10 32x32 dataset as well as WikiText 2 and the Adult dataset. Link to pre-trained model for CIFAR10 is shared under the `generative_model` folder under the image modality.
+### ◇ ◇ Generative Model for Non-Member Data
+Step 1: Train a generative model on a subset of data used to train your target ML model. This generative model will then generate samples for the non-member dataset. This repository provides a generative model for CIFAR10 32x32 dataset <!-- as well as WikiText 2 and the Adult dataset-->. Link to pre-trained model for CIFAR10 is shared under the `generative_model` folder under the image modality.
 
 
 ### ◇ Audit Evaluation Phase:
 
 #### ◇ ◇ Target and Helper Models:
-Step 2: Train the target model (if need be otherwise use a pre-trained version available) for loss values for black-box MIA and the helper model for the baseline attack
-The target model is the ML model whose training data privacy leakage we are concerned about. The helper model is used to train the baseline attack for a representative, strong baseline classifier. This baseline classifier distinguishes between member and non-member data without access to the target model, as opposed to the MIA. We also analyze image models trained with DP-SGD under the file `DP_models.py` along with the instructions to run the code.
+Step 2: Train the target model (if needed otherwise use a pre-trained version available) for loss values for <!--black-box--> the Membership Inference Attack (MIA). Train the helper model on synthetic data for the baseline attack.
+The target model is the ML model whose training data privacy leakage we are concerned about. The helper model helps the baseline model by providing additional features (i.e., embeddings) that serve as side information about the synthetic data distribution. This baseline classifier distinguishes between member and non-member data without access to the target model, as opposed to the MIA. We also analyze image models trained with DP-SGD under the file `DP_models.py` along with the instructions to run the code.
 
 
 #### ◇ ◇ The MIA and Baseline Attacks
-Step 3: Use code and running guidelines under the baseline_and_MIA folders to train the baseline and MIA attacks distinguishing between real member and synthetic non-member using helper and target models as side information respectively. Here we provide code for training the baseline and MIA attacks using the image and losses modules. The main pipeline that trains both is under `panoramia_audit.py` file. The folder contains relevant instructions and a Yaml config file highlighting experiment guidelines.
-
->  🚧 Please note NLP Data Modality is under progress and will be updated soon
-
- NLP_LLM-Privacy_Measurement_Progress: ███████░░░░ 70% Complete
+Step 3: Use code and running guidelines under the baseline_and_MIA folders to train the baseline and MIA classifier distinguishing between real member and synthetic non-member using helper and target models as side information respectively. Here we provide code for training the baseline and MIA attacks using the image and losses modules. The main pipeline that trains both is under `panoramia_audit.py` file. The folder contains relevant instructions and a Yaml config file highlighting experiment guidelines. Eventually, we evaluate the baseline and MIA classifiers on a test set consisting of real member and synthetic non-members.
 
 
 ### ◇ Plotting
 Step 4: Finally we can generate pretty pictures, and run the plotting code under plotting_scripts folder using
 
 `python3 compute_plot_audit_values.py --results_data_folder`
-This takes as input path to results folder containing csv file(s) with the format `member, baselinepred, mia<model_name1>pred, , mia<model_name1>_pred, ...` 
+This takes as input path to results folder containing csv file(s) with the format `member, baselinepred, mia<model_name1>pred, ...` 
 
 ### ◇ Comparison with SOTA
 
-This repository also includes our implementation of the threshold-based attack for O(1) code by Steinke et al. under the O1_Steinke_Code folder along with the instructions to run the code
+This repository also includes our implementation of the threshold-based attack for O(1) code by Steinke et al. under the O1_Steinke_Code folder along with the instructions to run the code.
 
 
 ## ◆ Requirements:

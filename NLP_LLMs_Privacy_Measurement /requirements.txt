@@ -1,0 +1,8 @@
+torch
+transformers
+pandas
+datasets
+transformers[sentencepiece]
+sklearn
+wandb
+accelerate
