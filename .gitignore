@@ -1,0 +1,17 @@
+# random generated files
+__pycache__
+.vscode
+.ipynb_checkpoints
+
+
+# slurm output files
+slurm*
+core.*
+
+*.pth
+*.ipynb
+*.xml
+*.iml
+*.bin
+*.pyc
+*.DS_Store
